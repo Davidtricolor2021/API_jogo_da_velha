@@ -42,7 +42,7 @@ def register_player():
 
     player_id = len(jogadores) + 1
     jogadores[player_id] = {"nome": nome, "vencidas": 0, "perdidas": 0, "empatadas": 0}
-    return jsonify({"player_id": player_id})
+    return jsonify({"player_id": player_id, "nome": nome})
 
 # Rota para iniciar um jogo
 @app.route('/api/start', methods=['POST'])
@@ -111,8 +111,14 @@ def player_move():
 
     # Verificar condições de vitória ou empate
     if verificar_vitoria(tabuleiro):
+        jogadores[player_id]["vencidas"] += 1  # Atualiza vitórias
+        outro_jogador = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
+        jogadores[outro_jogador]["perdidas"] += 1  # Atualiza derrotas
         return jsonify({"resultado": f"Jogador {player_id} venceu!", "tabuleiro": tabuleiro})
+
     if verificar_empate(tabuleiro):
+        jogadores[jogo["player_1_id"]]["empatadas"] += 1
+        jogadores[jogo["player_2_id"]]["empatadas"] += 1
         return jsonify({"resultado": "Empate!", "tabuleiro": tabuleiro})
 
     # Alternar turno para o próximo jogador
@@ -122,6 +128,26 @@ def player_move():
         "tabuleiro": tabuleiro,
         "proximo_turno": jogo["turno"]
     })
+
+# Rota que retorna as estatísticas do jogador, como vitórias, derrotas e empates.
+@app.route('/api/estatisticas-jogador/<player_id>', methods=['GET'])
+def estatisticas_jogador(player_id):
+    try:
+        player_id = int(player_id)  
+    except ValueError:
+        return jsonify({"erro": "ID do jogador inválido"}), 400
+
+    jogador = jogadores.get(player_id)
+    if not jogador:
+        return jsonify({"erro": "Jogador não encontrado"}), 404
+
+    estatisticas = {
+        "nome": jogador["nome"],
+        "vitorias": jogador["vencidas"],
+        "derrotas": jogador["perdidas"],
+        "empates": jogador["empatadas"]
+    }
+    return jsonify(estatisticas), 200
 
 # Rota para listar todos os jogadores
 @app.route('/api/jogadores', methods=['GET'])
