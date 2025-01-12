@@ -1,0 +1,20 @@
+{
+    "1": {
+        "nome": "David",
+        "vencidas": 1,
+        "perdidas": 1,
+        "empatadas": 0
+    },
+    "2": {
+        "nome": "Eduardo",
+        "vencidas": 1,
+        "perdidas": 1,
+        "empatadas": 0
+    },
+    "3": {
+        "nome": "Caua",
+        "vencidas": 0,
+        "perdidas": 0,
+        "empatadas": 0
+    }
+}

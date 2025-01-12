@@ -1,13 +1,46 @@
 from flask import Flask, request, jsonify
 import json
 import random
+import os
 
 # Inicializando o Flask
 app = Flask(__name__)
 
-# Dados em memória (simulações para jogadores e jogos)
+# Caminho para os arquivos de persistência
+ARQUIVO_JOGADORES = 'jogadores.json'
+ARQUIVO_JOGOS = 'jogos.json'
+
+# Função para carregar os dados de jogadores
+def carregar_jogadores():
+    if os.path.exists(ARQUIVO_JOGADORES):
+        with open(ARQUIVO_JOGADORES, 'r') as f:
+            return json.load(f)
+    return {}
+
+# Função para salvar os dados de jogadores
+def salvar_jogadores():
+    with open(ARQUIVO_JOGADORES, 'w') as f:
+        json.dump(jogadores, f, indent=4)
+
+# Função para carregar os dados de jogos
+def carregar_jogos():
+    if os.path.exists(ARQUIVO_JOGOS):
+        with open(ARQUIVO_JOGOS, 'r') as f:
+            return json.load(f)
+    return {}
+
+# Função para salvar os dados de jogos
+def salvar_jogos():
+    with open(ARQUIVO_JOGOS, 'w') as f:
+        json.dump(jogos, f, indent=4)
+
+# Carregar jogadores e jogos ao iniciar o app
+jogadores = carregar_jogadores()
+jogos = carregar_jogos()
+
+""" # Dados em memória (simulações para jogadores e jogos)
 jogadores = {}
-jogos = {}
+jogos = {} """
 
 # Função para criar um tabuleiro vazio
 def criar_tabuleiro():
@@ -44,6 +77,9 @@ def register_player():
 
     player_id = len(jogadores) + 1
     jogadores[player_id] = {"nome": nome, "vencidas": 0, "perdidas": 0, "empatadas": 0}
+    # Salvar os dados dos jogadores
+    salvar_jogadores()
+
     return jsonify({"player_id": player_id, "nome": nome})
 
 # Rota para iniciar um jogo
@@ -72,6 +108,8 @@ def start_game():
         "player_2_id": player_2_id,
         "turno": player_1_id  # Inicia com o jogador 1
     }
+    # Salvar os dados dos jogos
+    salvar_jogos()
 
     return jsonify({
         "jogo_id": jogo_id,
@@ -116,15 +154,23 @@ def player_move():
         jogadores[player_id]["vencidas"] += 1  # Atualiza vitórias
         outro_jogador = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
         jogadores[outro_jogador]["perdidas"] += 1  # Atualiza derrotas
+        # Salvar os dados dos jogadores e jogos
+        salvar_jogadores()
+        salvar_jogos()
         return jsonify({"resultado": f"Jogador {player_id} venceu!", "tabuleiro": tabuleiro})
 
     if verificar_empate(tabuleiro):
         jogadores[jogo["player_1_id"]]["empatadas"] += 1
         jogadores[jogo["player_2_id"]]["empatadas"] += 1
+        # Salvar os dados dos jogadores e jogos
+        salvar_jogadores()
+        salvar_jogos()
         return jsonify({"resultado": "Empate!", "tabuleiro": tabuleiro})
 
     # Alternar turno para o próximo jogador
     jogo["turno"] = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
+    # Salvar os dados dos jogos
+    salvar_jogos()
 
     return jsonify({
         "tabuleiro": tabuleiro,
