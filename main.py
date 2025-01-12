@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+import json
+import random
 
 # Inicializando o Flask
 app = Flask(__name__)
@@ -129,7 +131,7 @@ def player_move():
         "proximo_turno": jogo["turno"]
     })
 
-# Rota que retorna as estatísticas do jogador, como vitórias, derrotas e empates.
+# Rota que retorna as estatísticas do jogador (de acordo com o ID), como vitórias, derrotas e empates.
 @app.route('/api/estatisticas-jogador/<player_id>', methods=['GET'])
 def estatisticas_jogador(player_id):
     try:
@@ -147,17 +149,99 @@ def estatisticas_jogador(player_id):
         "derrotas": jogador["perdidas"],
         "empates": jogador["empatadas"]
     }
-    return jsonify(estatisticas), 200
+    # Usando json.dumps para garantir que a ordem não seja alterada
+    response = json.dumps(estatisticas, indent=4)
+    return app.response_class(response, mimetype='application/json')
 
-# Rota para listar todos os jogadores
+# Rota para listar todos os jogadores e suas estatisticas como vitórias, derrotas e empates.
 @app.route('/api/jogadores', methods=['GET'])
 def list_jogadores():
-    return jsonify(jogadores)
+    response = json.dumps(jogadores, indent=4)
+    return app.response_class(response, mimetype='application/json')
 
-# Rota para listar todos os jogos
+# Rota para listar todos os jogos e seu historico de jogadas
 @app.route('/api/jogos', methods=['GET'])
 def list_jogos():
     return jsonify(jogos)
+
+# Listas de mensagens de feedback
+mensagens_vitorias = [
+    "Parabéns! Continue usando estratégias que bloqueiam seu oponente.",
+    "Ótimo trabalho! Sua estratégia está impecável.",
+    "Vitória merecida! Não esqueça de ajustar sua estratégia conforme o adversário muda o padrão.",
+    "Você mostrou domínio total do tabuleiro. Continue criando cenários de vitória múltipla.",
+    "Excelente jogo! Suas habilidades de bloqueio e ataque estão bem afiadas."
+]
+
+mensagens_derrotas = [
+    "Não desista! Tente antecipar as jogadas do seu oponente.",
+    "Cada derrota é uma oportunidade de aprendizado. Priorize o centro do tabuleiro nas próximas partidas.",
+    "Você chegou perto! Pense em formas de criar mais de uma linha de ataque.",
+    "Não foi dessa vez, mas lembre-se: bloqueie o adversário com duas marcas alinhadas.",
+    "Perder faz parte do processo. Experimente variar suas jogadas para surpreender o oponente."
+]
+
+mensagens_empates = [
+    "Bom empate! Pense em formas de forçar o oponente a cometer erros.",
+    "Empate sólido! Trabalhe em estratégias para transformar empates em vitórias.",
+    "Boa defesa! Busque criar múltiplas possibilidades de vitória.",
+    "Um empate é melhor que uma derrota! Continue aprimorando suas jogadas.",
+    "Você conseguiu neutralizar o oponente! Tente ser mais ofensivo para garantir a vitória."
+]
+
+# Rota para obter histórico do jogador com feedback
+@app.route('/api/jogador/<player_id>/historico', methods=['GET'])
+def historico_jogador(player_id):
+    try:
+        player_id = int(player_id)  
+    except ValueError:
+        return jsonify({"erro": "ID do jogador inválido"}), 400
+
+    # Verificar se o jogador existe
+    if player_id not in jogadores:
+        return jsonify({"erro": "Jogador não encontrado"}), 404
+
+    jogador = jogadores[player_id]
+    historico = []
+
+    # Gerar o histórico com feedbacks
+    total_jogos = jogador["vencidas"] + jogador["perdidas"] + jogador["empatadas"]
+
+    if total_jogos > 0:
+        if jogador["vencidas"] > 0:
+            historico.append({
+                "resultado": "Vitórias",
+                "quantidade": jogador["vencidas"],
+                "feedback": random.choice(mensagens_vitorias)
+            })
+
+        if jogador["perdidas"] > 0:
+            historico.append({
+                "resultado": "Derrotas",
+                "quantidade": jogador["perdidas"],
+                "feedback": random.choice(mensagens_derrotas)
+            })
+
+        if jogador["empatadas"] > 0:
+            historico.append({
+                "resultado": "Empates",
+                "quantidade": jogador["empatadas"],
+                "feedback": random.choice(mensagens_empates)
+            })
+    else:
+        historico.append({
+            "resultado": "Nenhum jogo registrado",
+            "feedback": "Comece a jogar para receber feedbacks e melhorar suas estratégias!"
+        })
+
+    # Usando json.dumps para garantir que a ordem não seja alterada
+    resposta = json.dumps({
+        "jogador_id": player_id,
+        "nome": jogador.get("nome", "Jogador"),
+        "historico": historico
+    }, indent=4)
+
+    return app.response_class(resposta, mimetype='application/json')
 
 # Rota principal
 @app.route('/')
