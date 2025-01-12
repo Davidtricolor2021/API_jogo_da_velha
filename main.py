@@ -38,10 +38,6 @@ def salvar_jogos():
 jogadores = carregar_jogadores()
 jogos = carregar_jogos()
 
-""" # Dados em memória (simulações para jogadores e jogos)
-jogadores = {}
-jogos = {} """
-
 # Função para criar um tabuleiro vazio
 def criar_tabuleiro():
     return [["" for _ in range(3)] for _ in range(3)]
@@ -90,9 +86,9 @@ def start_game():
     player_2_id = data.get('player_2_id')
 
     # Verificar se os jogadores existem
-    if player_1_id not in jogadores:
+    if str(player_1_id) not in jogadores:
         return jsonify({"erro": "Jogador 1 não encontrado"}), 404
-    if player_2_id not in jogadores:
+    if str(player_2_id) not in jogadores:
         return jsonify({"erro": "Jogador 2 não encontrado"}), 404
     
     # Verificar se os IDs dos jogadores são diferentes
@@ -128,11 +124,11 @@ def player_move():
     x, y = data.get('posicao', (None, None))
 
     # Verificar se o jogo existe
-    if jogo_id not in jogos:
+    if str(jogo_id) not in jogos:
         return jsonify({"erro": "Jogo não encontrado"}), 404
 
     # Obter informações do jogo
-    jogo = jogos[jogo_id]
+    jogo = jogos[str(jogo_id)]
     tabuleiro = jogo["tabuleiro"]
 
     # Verificar se é a vez do jogador
@@ -151,17 +147,17 @@ def player_move():
 
     # Verificar condições de vitória ou empate
     if verificar_vitoria(tabuleiro):
-        jogadores[player_id]["vencidas"] += 1  # Atualiza vitórias
+        jogadores[str(player_id)]["vencidas"] += 1  # Atualiza vitórias
         outro_jogador = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
-        jogadores[outro_jogador]["perdidas"] += 1  # Atualiza derrotas
+        jogadores[str(outro_jogador)]["perdidas"] += 1  # Atualiza derrotas
         # Salvar os dados dos jogadores e jogos
         salvar_jogadores()
         salvar_jogos()
         return jsonify({"resultado": f"Jogador {player_id} venceu!", "tabuleiro": tabuleiro})
 
     if verificar_empate(tabuleiro):
-        jogadores[jogo["player_1_id"]]["empatadas"] += 1
-        jogadores[jogo["player_2_id"]]["empatadas"] += 1
+        jogadores[str(jogo["player_1_id"])]["empatadas"] += 1
+        jogadores[str(jogo["player_2_id"])]["empatadas"] += 1
         # Salvar os dados dos jogadores e jogos
         salvar_jogadores()
         salvar_jogos()
@@ -185,15 +181,15 @@ def estatisticas_jogador(player_id):
     except ValueError:
         return jsonify({"erro": "ID do jogador inválido"}), 400
 
-    jogador = jogadores.get(player_id)
+    jogador = jogadores.get(str(player_id))
     if not jogador:
         return jsonify({"erro": "Jogador não encontrado"}), 404
 
     estatisticas = {
-        "nome": jogador["nome"],
-        "vitorias": jogador["vencidas"],
-        "derrotas": jogador["perdidas"],
-        "empates": jogador["empatadas"]
+        "nome": jogador.get("nome", "Desconhecido"),
+        "vitorias": jogador.get("vencidas", 0),
+        "derrotas": jogador.get("perdidas", 0),
+        "empates": jogador.get("empatadas", 0)
     }
     # Usando json.dumps para garantir que a ordem não seja alterada
     response = json.dumps(estatisticas, indent=4)
@@ -208,7 +204,8 @@ def list_jogadores():
 # Rota para listar todos os jogos e seu historico de jogadas
 @app.route('/api/jogos', methods=['GET'])
 def list_jogos():
-    return jsonify(jogos)
+    response = json.dumps(jogos, indent=4)
+    return app.response_class(response, mimetype='application/json')
 
 # Listas de mensagens de feedback
 mensagens_vitorias = [
@@ -243,11 +240,10 @@ def historico_jogador(player_id):
     except ValueError:
         return jsonify({"erro": "ID do jogador inválido"}), 400
 
-    # Verificar se o jogador existe
-    if player_id not in jogadores:
+    jogador = jogadores.get(str(player_id))
+    if not jogador:
         return jsonify({"erro": "Jogador não encontrado"}), 404
 
-    jogador = jogadores[player_id]
     historico = []
 
     # Gerar o histórico com feedbacks

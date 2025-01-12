@@ -1,20 +1,32 @@
 {
     "1": {
         "nome": "David",
-        "vencidas": 1,
+        "vencidas": 5,
         "perdidas": 1,
-        "empatadas": 0
+        "empatadas": 1
     },
     "2": {
         "nome": "Eduardo",
         "vencidas": 1,
-        "perdidas": 1,
-        "empatadas": 0
+        "perdidas": 5,
+        "empatadas": 1
     },
     "3": {
         "nome": "Caua",
-        "vencidas": 0,
+        "vencidas": 1,
         "perdidas": 0,
         "empatadas": 0
+    },
+    "4": {
+        "nome": "Isa",
+        "vencidas": 0,
+        "perdidas": 1,
+        "empatadas": 1
+    },
+    "5": {
+        "nome": "lorena",
+        "vencidas": 0,
+        "perdidas": 0,
+        "empatadas": 1
     }
 }
