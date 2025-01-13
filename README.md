@@ -86,7 +86,7 @@ Resposta:
 
 O jogador_id é gerado automaticamente e será utilizado para interações subsequentes.
 
-### 2. Iniciar um Jogo
+### 2. Iniciar um Jogo contra a maquina ou outro jogador
 Para iniciar um jogo, envie uma requisição POST para /api/jogo com os IDs dos jogadores:
 
 Endpoint:
@@ -117,7 +117,55 @@ Resposta:
   "turno": "123"
 }
 ```
-### 3. Realizar uma Jogada
+### 3.2. Realizar uma Jogada em um jogo contra a maquina
+Para realizar uma jogada, envie uma requisição POST para /api/play com o jogo_id, ID do jogador e a posição da jogada:
+
+Endpoint:
+Exemplo de Requisição:
+```bash
+POST /api/play
+
+curl -X POST "http://localhost:5000/api/play"
+```
+Corpo da requisição:
+
+```json
+{
+	  "jogo_id": "77",
+    "player_id": "1",
+    "linha": 0,
+    "coluna": 2
+}
+```
+Resposta:
+
+```json
+{
+    "jogo_id": "77",
+    "resultado": "continua",
+    "tabuleiro": [
+        [
+            "O",
+            "O",
+            "X"
+        ],
+        [
+            "X",
+            "X",
+            "O"
+        ],
+        [
+            "",
+            "",
+            ""
+        ]
+    ],
+    "turno": "1"
+}
+```
+O maquina realizara a sua jogada automaticamente e voce deve jogar novamente.
+
+### 3.2. Realizar uma Jogada em um jogo contra outro jogador
 Para realizar uma jogada, envie uma requisição POST para /api/move com a posição da jogada e o ID do jogador:
 
 Endpoint:
