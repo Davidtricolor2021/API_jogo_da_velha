@@ -20,8 +20,8 @@ Este projeto oferece uma API RESTful para um jogo da velha com suporte a jogador
 Primeiro, clone este repositório para a sua máquina local:
 
 ```bash
-git clone https://github.com/seu_usuario/jogo_da_velha.git
-cd jogo_da_velha
+git clone https://github.com/Davidtricolor2021/API_jogo_da_velha.git
+cd API_jogo_da_velha
 ```
 ### 2. Criar um ambiente virtual
 É altamente recomendado criar um ambiente virtual para o projeto para evitar conflitos de dependências:
@@ -60,18 +60,16 @@ python main.py
 ```
 O servidor será iniciado em http://127.0.0.1:5000/ (ou o endereço e porta configurados).
 
-Interagindo com a API
+### Interagindo com a API
 ### 1. Registrar Jogadores
 Para registrar um jogador, envie uma requisição POST para /api/jogador com os dados do jogador:
 
 ```bash
-
 POST /api/jogador
 ```
 Corpo da requisição:
 
 ```json
-
 {
   "nome": "Jogador 1"
 }
@@ -79,7 +77,6 @@ Corpo da requisição:
 Resposta:
 
 ```json
-
 {
   "jogador_id": "123"
 }
@@ -91,13 +88,11 @@ O jogador_id é gerado automaticamente e será utilizado para interações subse
 Para iniciar um jogo, envie uma requisição POST para /api/jogo com os IDs dos jogadores:
 
 ```bash
-
 POST /api/jogo
 ```
 Corpo da requisição:
 
 ```json
-
 {
   "player_1_id": "123",
   "player_2_id": "456"
@@ -106,7 +101,6 @@ Corpo da requisição:
 Resposta:
 
 ```json
-
 {
   "jogo_id": "789",
   "tabuleiro": [
@@ -121,13 +115,11 @@ Resposta:
 Para realizar uma jogada, envie uma requisição POST para /api/move com a posição da jogada e o ID do jogador:
 
 ```bash
-
 POST /api/move
 ```
 Corpo da requisição:
 
 ```json
-
 {
   "jogo_id": "789",
   "player_id": "123",
@@ -137,7 +129,6 @@ Corpo da requisição:
 Resposta:
 
 ```json
-
 {
   "tabuleiro": [
     ["", "", ""],
@@ -155,7 +146,6 @@ Se o jogo terminar, o resultado será retornado junto com o estado final do tabu
 Vitória:
 
 ```json
-
 {
   "resultado": "Jogador 123 venceu!",
   "tabuleiro": [
@@ -168,7 +158,6 @@ Vitória:
 Empate:
 
 ```json
-
 {
   "resultado": "Empate!",
   "tabuleiro": [
@@ -180,16 +169,15 @@ Empate:
 ```
 ### Treinamento do Modelo
 ### 1. Conjunto de Dados Histórico
-O modelo de IA foi treinado utilizando um conjunto de dados histórico de jogos anteriores, onde foram registradas as jogadas e os resultados. Este conjunto de dados está localizado em dados_jogos.json.
+O modelo de IA foi treinado utilizando um conjunto de dados histórico de jogos anteriores, onde foram registradas as jogadas e os resultados. Este conjunto de dados está localizado em *jogos.json*.
 
 ### 2. Como Treinar o Modelo
 Para treinar o modelo, você precisará do conjunto de dados de jogos anteriores. Siga os passos abaixo:
 
-Certifique-se de que os dados históricos estão presentes no arquivo dados_jogos.json com o formato adequado.
+Certifique-se de que os dados históricos estão presentes no arquivo *jogos.json* com o formato adequado.
 Execute o script de treinamento para gerar o modelo:
 
 ```bash
-
 python treinamento_modelo.py
 ```
 Este script irá treinar o modelo utilizando os dados históricos, gerar o modelo treinado e salvar o arquivo modelo_treinado.joblib.
