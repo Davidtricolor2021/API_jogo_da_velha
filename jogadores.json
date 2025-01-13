@@ -1,32 +1,50 @@
 {
     "1": {
-        "nome": "David",
-        "vencidas": 5,
-        "perdidas": 1,
+        "nome": "Teste1",
+        "vencidas": 10,
+        "perdidas": 4,
         "empatadas": 1
     },
     "2": {
-        "nome": "Eduardo",
-        "vencidas": 1,
-        "perdidas": 5,
+        "nome": "Teste2",
+        "vencidas": 4,
+        "perdidas": 10,
         "empatadas": 1
     },
     "3": {
-        "nome": "Caua",
+        "nome": "Teste3",
         "vencidas": 1,
         "perdidas": 0,
         "empatadas": 0
     },
     "4": {
-        "nome": "Isa",
+        "nome": "Teste4",
         "vencidas": 0,
         "perdidas": 1,
         "empatadas": 1
     },
     "5": {
-        "nome": "lorena",
+        "nome": "Teste5",
         "vencidas": 0,
         "perdidas": 0,
         "empatadas": 1
+    },
+    "6": {
+        "nome": "Teste6",
+        "vencidas": 0,
+        "perdidas": 0,
+        "empatadas": 0
+    },
+    "7": {
+        "nome": "Teste7",
+        "vencidas": 0,
+        "perdidas": 0,
+        "empatadas": 0
+    },
+    "8": {
+        "nome": "Teste8",
+        "vencidas": 0,
+        "perdidas": 0,
+        "empatadas": 0
     }
 }

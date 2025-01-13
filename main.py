@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 import json
 import random
 import os
+import joblib
+import numpy as np
 
 # Inicializando o Flask
 app = Flask(__name__)
@@ -9,6 +11,10 @@ app = Flask(__name__)
 # Caminho para os arquivos de persistência
 ARQUIVO_JOGADORES = 'jogadores.json'
 ARQUIVO_JOGOS = 'jogos.json'
+
+# Carregamento do modelo de Machine Learning
+CAMINHO_MODELO = 'C:\\xampp\\htdocs\\api_jogo_da_velha\\modelos_treinamentos\\modelo_treinado.joblib'
+modelo = joblib.load(CAMINHO_MODELO)
 
 # Função para carregar os dados de jogadores
 def carregar_jogadores():
@@ -152,7 +158,7 @@ def player_move():
         jogadores[str(outro_jogador)]["perdidas"] += 1  # Atualiza derrotas
         # Salvar os dados dos jogadores e jogos
         salvar_jogadores()
-        salvar_jogos()
+        salvar_jogos()  # Salvar o estado do jogo após vitória
         return jsonify({"resultado": f"Jogador {player_id} venceu!", "tabuleiro": tabuleiro})
 
     if verificar_empate(tabuleiro):
@@ -160,12 +166,13 @@ def player_move():
         jogadores[str(jogo["player_2_id"])]["empatadas"] += 1
         # Salvar os dados dos jogadores e jogos
         salvar_jogadores()
-        salvar_jogos()
+        salvar_jogos()  # Salvar o estado do jogo após empate
         return jsonify({"resultado": "Empate!", "tabuleiro": tabuleiro})
 
     # Alternar turno para o próximo jogador
     jogo["turno"] = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
-    # Salvar os dados dos jogos
+
+    # Salvar os dados dos jogos após a jogada
     salvar_jogos()
 
     return jsonify({
@@ -285,6 +292,59 @@ def historico_jogador(player_id):
 
     return app.response_class(resposta, mimetype='application/json')
 
+# Rota para sugerir a próxima jogada com base no modelo de Machine Learning.
+@app.route('/api/ai-move', methods=['GET'])
+def ai_move():
+    # Obter o ID do jogo dos parâmetros da URL
+    jogo_id = request.args.get('jogo_id')
+
+    # Validar se o parâmetro 'jogo_id' foi fornecido
+    if not jogo_id:
+        return jsonify({"erro": "O parâmetro 'jogo_id' é obrigatório"}), 400
+    
+    # Carregar os jogos antes de manipular
+    jogos = carregar_jogos()
+
+    # Verificar se o jogo existe no dicionário 'jogos'
+    if str(jogo_id) not in jogos:
+        return jsonify({"erro": "Jogo não encontrado"}), 404
+
+    # Obter o estado do jogo
+    jogo = jogos[str(jogo_id)]
+    tabuleiro = jogo["tabuleiro"]
+
+    # Transformar o tabuleiro para um formato numérico esperado pelo modelo
+    tabuleiro_numerico = [
+        [1 if x == 'X' else -1 if x == 'O' else 0 for x in linha]
+        for linha in tabuleiro
+    ]
+    # Preparar a entrada para o modelo
+    entrada = np.array(tabuleiro_numerico).flatten().reshape(1, -1)
+
+    try:
+        melhor_jogada = modelo.predict(entrada)
+        indice_melhor_jogada = int(melhor_jogada[0])
+
+        # Verificar se a posição sugerida está vazia
+        if tabuleiro_numerico[indice_melhor_jogada // 3][indice_melhor_jogada % 3] != 0:
+            # Caso a posição sugerida seja inválida, procurar a próxima posição vazia
+            for i in range(9):
+                if tabuleiro_numerico[i // 3][i % 3] == 0:
+                    indice_melhor_jogada = i
+                    break
+        # Converter o índice da melhor jogada para coordenadas (x, y)
+        x, y = divmod(indice_melhor_jogada, 3)
+
+        # Retornar a melhor jogada sugerida
+        return jsonify({
+            "melhor_jogada": {"x": x, "y": y},
+            "tabuleiro": tabuleiro
+        })
+
+    except Exception as e:
+        # Retornar erro caso algo dê errado durante a previsão
+        return jsonify({"erro": f"Erro ao processar a jogada: {str(e)}"}), 500
+    
 # Rota principal
 @app.route('/')
 def home():
