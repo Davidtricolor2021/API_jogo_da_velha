@@ -4,6 +4,7 @@ import random
 import os
 import joblib
 import numpy as np
+import logging
 
 # Inicializando o Flask
 app = Flask(__name__)
@@ -68,6 +69,126 @@ def verificar_empate(tabuleiro):
         if "" in linha:
             return False
     return True
+
+# Configuração básica de logging
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Função para processar a jogada da máquina
+def jogada_maquina(tabuleiro):
+    # Obter o estado do tabuleiro como entrada para o modelo
+    entrada_modelo = []
+    for linha in tabuleiro:
+        for celula in linha:
+            if celula == "X":
+                entrada_modelo.append(1)
+            elif celula == "O":
+                entrada_modelo.append(-1)
+            else:
+                entrada_modelo.append(0)
+
+    logging.debug(f"Entrada para o modelo: {entrada_modelo}")
+
+    # Prever posição usando o modelo
+    posicao_prevista = modelo.predict([entrada_modelo])[0]
+    logging.debug(f"Posição prevista pelo modelo: {posicao_prevista}")
+
+    # Converter posição prevista para coordenadas no tabuleiro
+    linha_prevista = posicao_prevista // 3
+    coluna_prevista = posicao_prevista % 3
+    logging.debug(f"Coordenadas previstas: linha={linha_prevista}, coluna={coluna_prevista}")
+
+    # Verificar se a posição prevista está livre
+    if tabuleiro[linha_prevista][coluna_prevista] == "":
+        return linha_prevista, coluna_prevista
+
+    # Tentar encontrar outra posição válida caso a prevista esteja ocupada
+    logging.warning("Jogada prevista está ocupada, buscando nova posição válida.")
+    for linha in range(3):
+        for coluna in range(3):
+            if tabuleiro[linha][coluna] == "":
+                logging.debug(f"Posição alternativa encontrada: linha={linha}, coluna={coluna}")
+                return linha, coluna
+
+    # Retornar None se não houver posições disponíveis
+    return None, None
+
+# Rota para realizar uma jogada
+@app.route('/api/play', methods=['POST'])
+def play_turn():
+    global jogos
+    data = request.json
+    jogo_id = data.get('jogo_id')
+    player_id = data.get('player_id')
+    linha = data.get('linha')
+    coluna = data.get('coluna')
+
+    # Carregar o estado mais recente dos jogos
+    jogos = carregar_jogos()
+
+    logging.debug(f"Dados recebidos: jogo_id={jogo_id}, player_id={player_id}, linha={linha}, coluna={coluna}")
+
+    # Verificar se o jogo existe
+    if str(jogo_id) not in jogos:
+        return jsonify({"erro": "Jogo não encontrado"}), 404
+
+    jogo = jogos[str(jogo_id)]
+    tabuleiro = jogo["tabuleiro"]
+
+    # Verificar se é o turno do jogador certo
+    if jogo["turno"] != player_id:
+        return jsonify({"erro": "Não é o seu turno"}), 400
+
+    # Verificar se a posição está vazia
+    if tabuleiro[linha][coluna] != "":
+        return jsonify({"erro": "Posição já ocupada"}), 400
+
+    # Registrar a jogada
+    simbolo = "X" if player_id == jogo["player_1_id"] else "O"
+    tabuleiro[linha][coluna] = simbolo
+
+    logging.debug(f"Jogada registrada: simbolo={simbolo}, tabuleiro={tabuleiro}")
+
+    # Verificar vitória ou empate
+    if verificar_vitoria(tabuleiro):
+        resultado = "vitória" if player_id == jogo["player_1_id"] else "derrota"
+    elif verificar_empate(tabuleiro):
+        resultado = "empate"
+    else:
+        resultado = "continua"
+
+    # Alterar o turno para o próximo jogador ou a máquina
+    if resultado == "continua":
+        if player_id == jogo["player_1_id"]:
+            jogo["turno"] = jogo["player_2_id"]
+            if jogo["player_2_id"]:
+                # Máquina realiza sua jogada
+                linha_maquina, coluna_maquina = jogada_maquina(tabuleiro)
+                if linha_maquina is not None and coluna_maquina is not None and tabuleiro[linha_maquina][coluna_maquina] == "":
+                    tabuleiro[linha_maquina][coluna_maquina] = "O"
+                    logging.debug(f"Máquina jogou: linha={linha_maquina}, coluna={coluna_maquina}, tabuleiro={tabuleiro}")
+
+                    if verificar_vitoria(tabuleiro):
+                        resultado = "derrota"
+                    elif verificar_empate(tabuleiro):
+                        resultado = "empate"
+                    else:
+                        jogo["turno"] = jogo["player_1_id"]
+                else:
+                    logging.error("Jogada inválida da máquina ou posição já ocupada!")
+        else:
+            jogo["turno"] = jogo["player_1_id"]
+
+    # Atualizar o estado do jogo
+    salvar_jogos()
+
+    logging.debug(f"Estado atualizado: jogo_id={jogo_id}, resultado={resultado}, turno={jogo['turno']}")
+
+    return jsonify({
+        "jogo_id": jogo_id,
+        "tabuleiro": tabuleiro,
+        "resultado": resultado,
+        "turno": jogo["turno"]
+    })
 
 # Rota para registrar um jogador
 @app.route('/api/register', methods=['POST'])
