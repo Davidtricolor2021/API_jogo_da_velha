@@ -112,7 +112,7 @@ def jogada_maquina(tabuleiro):
     # Retornar None se não houver posições disponíveis
     return None, None
 
-# Rota para realizar uma jogada
+# Rota para realizar uma jogada em jogos contra a maquina
 @app.route('/api/play', methods=['POST'])
 def play_turn():
     global jogos
@@ -148,13 +148,26 @@ def play_turn():
 
     logging.debug(f"Jogada registrada: simbolo={simbolo}, tabuleiro={tabuleiro}")
 
-    # Verificar vitória ou empate
+    # Verificar condições de vitória ou empate
     if verificar_vitoria(tabuleiro):
         resultado = "vitória" if player_id == jogo["player_1_id"] else "derrota"
+        jogadores[str(player_id)]["vencidas"] += 1  # Atualiza vitórias
+        outro_jogador = jogo["player_2_id"] if player_id == jogo["player_1_id"] else jogo["player_1_id"]
+        jogadores[str(outro_jogador)]["perdidas"] += 1  # Atualiza derrotas
+        # Salvar os dados dos jogadores e jogos
+        salvar_jogadores()
+        salvar_jogos()  # Salvar o estado do jogo após vitória
+        return jsonify({"resultado": f"Jogador {player_id} venceu!", "tabuleiro": tabuleiro})
     elif verificar_empate(tabuleiro):
         resultado = "empate"
+        jogadores[str(jogo["player_1_id"])]["empatadas"] += 1
+        jogadores[str(jogo["player_2_id"])]["empatadas"] += 1
+        # Salvar os dados dos jogadores e jogos
+        salvar_jogadores()
+        salvar_jogos()  # Salvar o estado do jogo após empate
+        return jsonify({"resultado": "Empate!", "tabuleiro": tabuleiro})
     else:
-        resultado = "continua"
+        resultado = "continua"       
 
     # Alterar o turno para o próximo jogador ou a máquina
     if resultado == "continua":
@@ -168,7 +181,15 @@ def play_turn():
                     logging.debug(f"Máquina jogou: linha={linha_maquina}, coluna={coluna_maquina}, tabuleiro={tabuleiro}")
 
                     if verificar_vitoria(tabuleiro):
-                        resultado = "derrota"
+                        # Atualizar estatísticas: jogador perdeu
+                        jogadores[str(player_id)]["perdidas"] += 1
+                        outro_jogador = jogo["player_1_id"] if player_id != jogo["player_1_id"] else jogo["player_2_id"]
+                        jogadores[str(outro_jogador)]["vencidas"] += 1
+
+                        salvar_jogadores()
+                        salvar_jogos()
+                        return jsonify({"resultado": f"Jogador {outro_jogador} venceu!", "tabuleiro": tabuleiro})
+                        
                     elif verificar_empate(tabuleiro):
                         resultado = "empate"
                     else:
@@ -242,7 +263,7 @@ def start_game():
         "turno": player_1_id
     })
 
-# Rota para realizar uma jogada
+# Rota para realizar uma jogada em jogos multiplayer
 @app.route('/api/move', methods=['POST'])
 def player_move():
     global jogos

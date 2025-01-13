@@ -1,9 +1,9 @@
 {
     "1": {
         "nome": "Teste1",
-        "vencidas": 11,
-        "perdidas": 4,
-        "empatadas": 1
+        "vencidas": 19,
+        "perdidas": 10,
+        "empatadas": 2
     },
     "2": {
         "nome": "Teste2",
@@ -46,5 +46,11 @@
         "vencidas": 0,
         "perdidas": 0,
         "empatadas": 0
+    },
+    "9": {
+        "nome": "maquina",
+        "vencidas": 7,
+        "perdidas": 7,
+        "empatadas": 1
     }
 }
