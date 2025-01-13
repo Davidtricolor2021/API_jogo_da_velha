@@ -1,14 +1,14 @@
 {
     "1": {
         "nome": "Teste1",
-        "vencidas": 10,
+        "vencidas": 11,
         "perdidas": 4,
         "empatadas": 1
     },
     "2": {
         "nome": "Teste2",
         "vencidas": 4,
-        "perdidas": 10,
+        "perdidas": 11,
         "empatadas": 1
     },
     "3": {

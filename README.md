@@ -1,7 +1,5 @@
-# API_jogo_da_velha
+# Jogo da Velha com Flask e Machine Learning – API RESTful
 Teste Prático: Jogo da Velha com Flask, Identificação de Jogadores e Machine Learning
-
-# Jogo da Velha API
 
 Este projeto oferece uma API RESTful para um jogo da velha com suporte a jogadores humanos e uma IA treinada para jogar contra o usuário. A API está construída utilizando o framework **Flask** em Python e integra um modelo de aprendizado de máquina (ML) para melhorar o desempenho das jogadas da IA.
 
@@ -64,8 +62,12 @@ O servidor será iniciado em http://127.0.0.1:5000/ (ou o endereço e porta conf
 ### 1. Registrar Jogadores
 Para registrar um jogador, envie uma requisição POST para /api/jogador com os dados do jogador:
 
+Endpoint:
+Exemplo de Requisição:
 ```bash
-POST /api/jogador
+POST /api/register
+
+curl -X POST "http://localhost:5000/api/register"
 ```
 Corpo da requisição:
 
@@ -87,8 +89,12 @@ O jogador_id é gerado automaticamente e será utilizado para interações subse
 ### 2. Iniciar um Jogo
 Para iniciar um jogo, envie uma requisição POST para /api/jogo com os IDs dos jogadores:
 
+Endpoint:
+Exemplo de Requisição:
 ```bash
-POST /api/jogo
+POST /api/start
+
+curl -X POST "http://localhost:5000/api/start"
 ```
 Corpo da requisição:
 
@@ -114,8 +120,12 @@ Resposta:
 ### 3. Realizar uma Jogada
 Para realizar uma jogada, envie uma requisição POST para /api/move com a posição da jogada e o ID do jogador:
 
+Endpoint:
+Exemplo de Requisição:
 ```bash
 POST /api/move
+
+curl -X POST "http://localhost:5000/api/move"
 ```
 Corpo da requisição:
 
@@ -140,7 +150,7 @@ Resposta:
 ```
 O próximo jogador será automaticamente alternado.
 
-### 4. Resultado do Jogo
+##### Resultado do Jogo
 Se o jogo terminar, o resultado será retornado junto com o estado final do tabuleiro. Um dos seguintes cenários pode ocorrer:
 
 Vitória:
@@ -167,6 +177,147 @@ Empate:
   ]
 }
 ```
+### 4. Obter as estatísticas de um jogador
+
+Endpoint:
+Exemplo de Requisição:
+```bash
+GET /api/estatisticas-jogador/<player_id>
+
+curl -X GET "http://localhost:5000/api/estatisticas-jogador/1"
+```
+Resposta de Sucesso (200):
+
+```json
+{
+    "nome": "João",
+    "vitorias": 10,
+    "derrotas": 5,
+    "empates": 2
+}
+```
+Resposta de Erro (404 - Jogador não encontrado):
+
+```json
+{
+    "erro": "Jogador não encontrado"
+}
+```
+### 5. Listar todos os jogadores e suas estatísticas
+
+Endpoint:
+Exemplo de Requisição:
+```bash
+GET /api/jogadores
+
+curl -X GET "http://localhost:5000/api/jogadores"
+```
+Resposta de Sucesso (200):
+
+```json
+{
+    "1": {
+        "nome": "João",
+        "vencidas": 10,
+        "perdidas": 5,
+        "empatadas": 2
+    },
+    "2": {
+        "nome": "Maria",
+        "vencidas": 7,
+        "perdidas": 8,
+        "empatadas": 3
+    }
+}
+```
+
+### 6. Obter o histórico de um jogador com feedback
+
+Endpoint:
+Exemplo de Requisição:
+```bash
+GET /api/jogador/<player_id>/historico
+
+curl -X GET "http://localhost:5000/api/jogador/1/historico"
+```
+Resposta de Sucesso (200):
+
+```json
+{
+    "jogador_id": 1,
+    "nome": "João",
+    "historico": [
+        {
+            "resultado": "Vitórias",
+            "quantidade": 10,
+            "feedback": "Vitória merecida! Não esqueça de ajustar sua estratégia conforme o adversário muda o padrão."
+        },
+        {
+            "resultado": "Derrotas",
+            "quantidade": 5,
+            "feedback": "Cada derrota é uma oportunidade de aprendizado. Priorize o centro do tabuleiro nas próximas partidas."
+        },
+        {
+            "resultado": "Empates",
+            "quantidade": 2,
+            "feedback": "Bom empate! Pense em formas de forçar o oponente a cometer erros."
+        }
+    ]
+}
+```
+Resposta de Erro (404 - Jogador não encontrado):
+
+```json
+{
+    "erro": "Jogador não encontrado"
+}
+```
+### 7. Obter a melhor jogada sugerida pela IA
+
+Endpoint:
+Exemplo de Requisição:
+```bash
+GET /api/ai-move?jogo_id=<jogo_id>
+
+curl -X GET "http://localhost:5000/api/ai-move?jogo_id=1"
+```
+Resposta de Sucesso (200):
+
+```json
+{
+    "melhor_jogada": {
+        "x": 2,
+        "y": 0
+    },
+    "tabuleiro": [
+        ["X", "O", ""],
+        ["", "X", "O"],
+        ["", "", ""]
+    ]
+}
+```
+Resposta de Erro (400 - Parâmetro ausente):
+
+```json
+{
+    "erro": "O parâmetro 'jogo_id' é obrigatório"
+}
+```
+Resposta de Erro (404 - Jogo não encontrado):
+
+```json
+{
+    "erro": "Jogo não encontrado"
+}
+```
+Resposta de Erro (500 - Erro na IA):
+
+```json
+{
+    "erro": "Erro ao processar a jogada: Modelo não treinado."
+}
+```
+
 ### Treinamento do Modelo
 ### 1. Conjunto de Dados Histórico
 O modelo de IA foi treinado utilizando um conjunto de dados histórico de jogos anteriores, onde foram registradas as jogadas e os resultados. Este conjunto de dados está localizado em *jogos.json*.

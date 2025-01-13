@@ -124,10 +124,15 @@ def start_game():
 # Rota para realizar uma jogada
 @app.route('/api/move', methods=['POST'])
 def player_move():
+    global jogos
+    
     data = request.json
     jogo_id = data.get('jogo_id')
     player_id = data.get('player_id')
     x, y = data.get('posicao', (None, None))
+
+    # Carregar o estado mais recente dos jogos
+    jogos = carregar_jogos()
 
     # Verificar se o jogo existe
     if str(jogo_id) not in jogos:
