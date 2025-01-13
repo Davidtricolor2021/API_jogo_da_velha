@@ -19,35 +19,33 @@ Este projeto oferece uma API RESTful para um jogo da velha com suporte a jogador
 
 Primeiro, clone este repositório para a sua máquina local:
 
-# bash
+```bash
 git clone https://github.com/seu_usuario/jogo_da_velha.git
 cd jogo_da_velha
-
-
+```
 ### 2. Criar um ambiente virtual
 É altamente recomendado criar um ambiente virtual para o projeto para evitar conflitos de dependências:
 
-# bash
-
+```bash
 python -m venv venv
+```
 Ative o ambiente virtual:
-
 Windows:
 
-# bash
-
+```bash
 venv\Scripts\activate
+```
 MacOS/Linux:
 
-# bash
-
+```bash
 source venv/bin/activate
+```
 ### 3. Instalar as dependências
 Instale as dependências necessárias usando o pip:
 
-# bash
-
+```bash
 pip install -r requirements.txt
+```
 ### 4. Arquivos de Persistência
 Certifique-se de que os arquivos de persistência jogadores.json e jogos.json estão presentes na raiz do projeto. Se não existirem, eles serão criados automaticamente quando você iniciar o servidor Flask e interagir com a API.
 
@@ -57,51 +55,57 @@ O modelo de IA está localizado em modelos_treinamentos/modelo_treinado.joblib. 
 Rodando o Servidor Flask
 Para iniciar o servidor Flask, execute o seguinte comando:
 
-# bash
-
+```bash
 python main.py
+```
 O servidor será iniciado em http://127.0.0.1:5000/ (ou o endereço e porta configurados).
 
 Interagindo com a API
 ### 1. Registrar Jogadores
 Para registrar um jogador, envie uma requisição POST para /api/jogador com os dados do jogador:
 
-# bash
+```bash
 
 POST /api/jogador
+```
 Corpo da requisição:
 
-# json
+```json
 
 {
   "nome": "Jogador 1"
 }
+```
 Resposta:
 
-# json
+```json
 
 {
   "jogador_id": "123"
 }
+```
+
 O jogador_id é gerado automaticamente e será utilizado para interações subsequentes.
 
 ### 2. Iniciar um Jogo
 Para iniciar um jogo, envie uma requisição POST para /api/jogo com os IDs dos jogadores:
 
-# bash
+```bash
 
 POST /api/jogo
+```
 Corpo da requisição:
 
-# json
+```json
 
 {
   "player_1_id": "123",
   "player_2_id": "456"
 }
+```
 Resposta:
 
-# json
+```json
 
 {
   "jogo_id": "789",
@@ -112,24 +116,27 @@ Resposta:
   ],
   "turno": "123"
 }
+```
 ### 3. Realizar uma Jogada
 Para realizar uma jogada, envie uma requisição POST para /api/move com a posição da jogada e o ID do jogador:
 
-# bash
+```bash
 
 POST /api/move
+```
 Corpo da requisição:
 
-# json
+```json
 
 {
   "jogo_id": "789",
   "player_id": "123",
   "posicao": [1, 1]
 }
+```
 Resposta:
 
-# json
+```json
 
 {
   "tabuleiro": [
@@ -139,6 +146,7 @@ Resposta:
   ],
   "proximo_turno": "456"
 }
+```
 O próximo jogador será automaticamente alternado.
 
 ### 4. Resultado do Jogo
@@ -146,7 +154,7 @@ Se o jogo terminar, o resultado será retornado junto com o estado final do tabu
 
 Vitória:
 
-# json
+```json
 
 {
   "resultado": "Jogador 123 venceu!",
@@ -156,9 +164,10 @@ Vitória:
     ["X", "", ""]
   ]
 }
+```
 Empate:
 
-# json
+```json
 
 {
   "resultado": "Empate!",
@@ -168,6 +177,7 @@ Empate:
     ["X", "X", "O"]
   ]
 }
+```
 ### Treinamento do Modelo
 ### 1. Conjunto de Dados Histórico
 O modelo de IA foi treinado utilizando um conjunto de dados histórico de jogos anteriores, onde foram registradas as jogadas e os resultados. Este conjunto de dados está localizado em dados_jogos.json.
@@ -178,9 +188,10 @@ Para treinar o modelo, você precisará do conjunto de dados de jogos anteriores
 Certifique-se de que os dados históricos estão presentes no arquivo dados_jogos.json com o formato adequado.
 Execute o script de treinamento para gerar o modelo:
 
-# bash
+```bash
 
-python treinar_modelo.py
+python treinamento_modelo.py
+```
 Este script irá treinar o modelo utilizando os dados históricos, gerar o modelo treinado e salvar o arquivo modelo_treinado.joblib.
 
 ### 3. Melhorando o Desempenho da IA
